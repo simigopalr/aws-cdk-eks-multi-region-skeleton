@@ -5,7 +5,7 @@ ENV HOME /home/kubectl
 
 RUN \
 	mkdir /root/bin /aws; \
-    apk add --update groff less bash py-pip jq curl && \
+    apk add --update groff less bash py-pip jq curl git sudo && \
 	pip install --upgrade pip; \
 	pip install awscli && \
 	apk --purge -v del py-pip && \

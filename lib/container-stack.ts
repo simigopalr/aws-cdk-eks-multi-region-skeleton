@@ -9,11 +9,9 @@ export class ContainerStack extends cdk.Stack {
     const cluster = props.cluster;
     const commonFolder = './yaml-common/';
     const regionFolder = `./yaml-${cdk.Stack.of(this).region}/`;
-    const petclincFolder = './pet-clinic-app/';
     
     readYamlFromDir(commonFolder, cluster);
     readYamlFromDir(regionFolder, cluster);
-    readYamlFromDir(petclincFolder, cluster);
     
     cluster.addHelmChart(`flux`, {
       repository: 'https://charts.fluxcd.io',
@@ -23,13 +21,7 @@ export class ContainerStack extends cdk.Stack {
         'git.url':'git@github.com:org/repo'
       }
     });
-    
-    // cluster.addHelmChart(`SpringBoot`, {
-    //   repository: 'https://platform9-community.github.io/helm-charts',
-    //   chart: 'spring-petclinic-cloud',
-    //   release: 'spring-petclinic-cloud'
-    // });
-    
+
   }
 
 }
