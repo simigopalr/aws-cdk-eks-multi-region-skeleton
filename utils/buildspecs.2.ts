@@ -7,8 +7,8 @@ import * as eks from '@aws-cdk/aws-eks';
 
 
 export function codeToECRspec (scope: cdk.Construct, apprepo: string) :PipelineProject {
-    const buildForECR = new codebuild.PipelineProject(scope, `build-to-ecr`, { 
-        projectName: `build-to-ecr`,
+    const buildForECR = new codebuild.PipelineProject(scope, `ext-build-to-ecr`, { 
+        projectName: `ext-build-to-ecr`,
         environment: {
             buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_DOCKER_18_09_0,
             privileged: true
@@ -45,11 +45,11 @@ export function codeToECRspec (scope: cdk.Construct, apprepo: string) :PipelineP
 
 }
 
-export function deployToEKSspec (scope: cdk.Construct, region: string, cluster: eks.Cluster, apprepo: ecr.IRepository, roleToAssume: iam.Role) :PipelineProject {
+export function deployToEKSspec (scope: cdk.Construct, region: string, cluster: eks.ICluster, apprepo: ecr.IRepository, roleToAssume: iam.IRole) :PipelineProject {
     
-    const deployBuildSpec = new codebuild.PipelineProject(scope, `deploy-to-eks-${region}`, {
+    const deployBuildSpec = new codebuild.PipelineProject(scope, `ext-deploy-to-eks-${region}`, {
         environment: {
-            buildImage: codebuild.LinuxBuildImage.fromAsset(scope, `custom-image-for-eks-${region}`, {
+            buildImage: codebuild.LinuxBuildImage.fromAsset(scope, `ext-custom-image-for-eks-${region}`, {
                 directory: './utils/buildimage'
             })
         },
@@ -74,10 +74,10 @@ export function deployToEKSspec (scope: cdk.Construct, region: string, cluster: 
                     `export AWS_SECRET_ACCESS_KEY="$(echo \${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"`,
                     `export AWS_SESSION_TOKEN="$(echo \${CREDENTIALS} | jq -r '.Credentials.SessionToken')"`,
                     `export AWS_EXPIRATION=$(echo \${CREDENTIALS} | jq -r '.Credentials.Expiration')`,
-                    `sed -i 's@CONTAINER_IMAGE@'\"$ECR_REPO_URI:$TAG\"'@' ./helm-springboot/values.yaml`,
+                    `sed -i 's@CONTAINER_IMAGE@'\"$ECR_REPO_URI:$TAG\"'@' ./helm-springboot/qa/values.yaml`,
                     `export VERIFY_CHECKSUM=false`,
                     `curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash`,
-                    `helm upgrade --install pet-clinic helm-springboot -n dev -f ./helm-springboot/stage/values.yaml`
+                    `helm upgrade --install pet-clinic helm-springboot -n qa -f ./helm-springboot/qa/values.yaml`
                 ]
               }
             }})
@@ -86,66 +86,14 @@ export function deployToEKSspec (scope: cdk.Construct, region: string, cluster: 
     deployBuildSpec.addToRolePolicy(new iam.PolicyStatement({
       actions: ['eks:DescribeCluster'],
       resources: [`*`],
-    }));
-
+    }));    
+    
     deployBuildSpec.addToRolePolicy(new iam.PolicyStatement({
         actions: ['sts:AssumeRole'],
         resources: [roleToAssume.roleArn]
     }))
-
+    
     return deployBuildSpec;
-
-}
-
-export function deployToEksStage (scope: cdk.Construct, region: string, cluster: eks.Cluster, apprepo: ecr.IRepository, roleToAssume: iam.Role) :PipelineProject {
-    
-    const deployStagBuildSpec = new codebuild.PipelineProject(scope, `deploy-to-stage-eks-${region}`, {
-        environment: {
-            buildImage: codebuild.LinuxBuildImage.fromAsset(scope, `custom-image-for-stage-eks-${region}`, {
-                directory: './utils/buildimage'
-            })
-        },
-        environmentVariables: { 
-            'REGION': { value:  region },
-            'CLUSTER_NAME': {  value: cluster.clusterName },
-            'ECR_REPO_URI': {  value: apprepo.repositoryUri } ,
-        },
-        buildSpec: codebuild.BuildSpec.fromObject({
-            version: "0.2",
-            phases: {
-              install: {
-                commands: [
-                  'env',
-                  'export TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION}',
-                  '/usr/local/bin/entrypoint.sh']
-              },
-              build: {
-                commands: [
-                    `CREDENTIALS=$(aws sts assume-role --role-arn "${roleToAssume.roleArn}" --role-session-name codebuild-cdk)`,
-                    `export AWS_ACCESS_KEY_ID="$(echo \${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"`,
-                    `export AWS_SECRET_ACCESS_KEY="$(echo \${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"`,
-                    `export AWS_SESSION_TOKEN="$(echo \${CREDENTIALS} | jq -r '.Credentials.SessionToken')"`,
-                    `export AWS_EXPIRATION=$(echo \${CREDENTIALS} | jq -r '.Credentials.Expiration')`,
-                    `sed -i 's@CONTAINER_IMAGE@'\"$ECR_REPO_URI:$TAG\"'@' ./helm-springboot/stage/values.yaml`,
-                    `export VERIFY_CHECKSUM=false`,
-                    `curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash`,
-                    `helm upgrade --install pet-clinic helm-springboot -n stage -f ./helm-springboot/stage/values.yaml`
-                ]
-              }
-            }})
-    });
-
-    deployStagBuildSpec.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['eks:DescribeCluster'],
-      resources: [`*`],
-    }));
-
-    deployStagBuildSpec.addToRolePolicy(new iam.PolicyStatement({
-        actions: ['sts:AssumeRole'],
-        resources: [roleToAssume.roleArn]
-    }))
-
-    return deployStagBuildSpec;
 
 }
 

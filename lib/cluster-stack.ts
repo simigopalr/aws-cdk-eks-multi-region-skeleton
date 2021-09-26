@@ -17,8 +17,8 @@ export class ClusterStack extends cdk.Stack {
       assumedBy: new iam.AccountRootPrincipal()
       });
 
-    const cluster = new eks.Cluster(this, 'demoeks-cluster', {
-        clusterName: `demoeks`,
+    const cluster = new eks.Cluster(this, 'SGR-eks-cluster', {
+        clusterName: `SGReks`,
         mastersRole: clusterAdmin,
         version: eks.KubernetesVersion.V1_18
         //defaultCapacity: 2
