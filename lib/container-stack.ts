@@ -7,12 +7,12 @@ export class ContainerStack extends cdk.Stack {
     super(scope, id, props);
 
     const cluster = props.cluster;
-    const devNamespace = './yaml-common/';
+    //const devNamespace = './yaml-common/';
     const stageNamespace = './yaml-common-stage/';
     const qaNamespace = './yaml-common-qa/';
     const regionFolder = `./yaml-${cdk.Stack.of(this).region}/`;
     
-    readYamlFromDir(devNamespace, cluster);
+    //readYamlFromDir(devNamespace, cluster);
     readYamlFromDir(stageNamespace, cluster);
     readYamlFromDir(qaNamespace, cluster);
     readYamlFromDir(regionFolder, cluster);

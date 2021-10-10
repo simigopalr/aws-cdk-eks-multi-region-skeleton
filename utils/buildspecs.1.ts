@@ -77,7 +77,7 @@ export function deployToEKSspec (scope: cdk.Construct, region: string, cluster: 
                     `sed -i 's@CONTAINER_IMAGE@'\"$ECR_REPO_URI:$TAG\"'@' ./helm-springboot/values.yaml`,
                     `export VERIFY_CHECKSUM=false`,
                     `curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash`,
-                    `helm upgrade --install pet-clinic helm-springboot -n dev -f ./helm-springboot/stage/values.yaml`
+                    `helm upgrade --install pet-clinic helm-springboot -n dev -f ./helm-springboot/values.yaml`
                 ]
               }
             }})
