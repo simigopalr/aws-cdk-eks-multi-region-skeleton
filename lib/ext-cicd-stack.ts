@@ -32,12 +32,12 @@ export class ExtCicdStack extends cdk.Stack {
         
         const cluster =  eks.Cluster.fromClusterAttributes(this, 'existing-cluster', {
             clusterName: 'SGReks',
-            kubectlRoleArn: 'arn:aws:iam::117134819170:role/ClusterStackDemoEks-us-we-AdminRoleDemoEks78FEFB8A-65NS8DIGJ89J',
+            kubectlRoleArn: 'arn:aws:iam::117134819170:role/ClusterStackDemoEks-us-we-AdminRoleDemoEks78FEFB8A-4QM1PO6JYIZE',
             //clusterEndpoint: '',
         });
         
         
-        const roleArnForDeploy = iam.Role.fromRoleArn(this, 'Role', 'arn:aws:iam::117134819170:role/ClusterStackDemoEks-us-west-2-for1stregionDC87AA9A-UJ87HQNPQKHW', {
+        const roleArnForDeploy = iam.Role.fromRoleArn(this, 'Role', 'arn:aws:iam::117134819170:role/ClusterStackDemoEks-us-west-2-for1stregionDC87AA9A-1BCPJKO1TM31R', {
           // Set 'mutable' to 'false' to use the role as-is and prevent adding new
           // policies to it. The default is 'true', which means the role may be
           // modified as part of the deployment.

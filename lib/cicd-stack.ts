@@ -25,7 +25,7 @@ export class CicdStack extends cdk.Stack {
         
         const ecrForMainRegion = new ecr.Repository(this, `ecr-for-pet-clinic`);
         
-        const buildForECR = codeToECRspec(this, ecrForMainRegion.repositoryUri);
+        const buildForECR = codeToECRspec(this, ecrForMainRegion.repositoryUri, props.firstRegionRole);
         ecrForMainRegion.grantPullPush(buildForECR.role!);
         
         const deployToMainCluster = deployToEKSspec(this, primaryRegion, props.firstRegionCluster, ecrForMainRegion, props.firstRegionRole);
